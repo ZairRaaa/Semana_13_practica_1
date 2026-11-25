@@ -1,0 +1,277 @@
+openapi: 3.0.3
+info:
+  title: API de la práctica de Desarrollo de Aplicaciones Web
+  version: 0.1.0
+paths:
+  /api/tareas/:
+    get:
+      operationId: tareas_list
+      parameters:
+      - in: query
+        name: estado
+        schema:
+          type: string
+          enum:
+          - completada
+          - pendiente
+        description: |-
+          * `pendiente` - Pendiente
+          * `completada` - Completada
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - tareas
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTareaList'
+          description: ''
+    post:
+      operationId: tareas_create
+      tags:
+      - tareas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tarea'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tarea'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tarea'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+          description: ''
+  /api/tareas/{id}/:
+    get:
+      operationId: tareas_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this tarea.
+        required: true
+      tags:
+      - tareas
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+          description: ''
+    put:
+      operationId: tareas_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this tarea.
+        required: true
+      tags:
+      - tareas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tarea'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tarea'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tarea'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+          description: ''
+    patch:
+      operationId: tareas_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this tarea.
+        required: true
+      tags:
+      - tareas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTarea'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTarea'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTarea'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+          description: ''
+    delete:
+      operationId: tareas_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this tarea.
+        required: true
+      tags:
+      - tareas
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    EstadoEnum:
+      enum:
+      - pendiente
+      - completada
+      type: string
+      description: |-
+        * `pendiente` - Pendiente
+        * `completada` - Completada
+    PaginatedTareaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tarea'
+    PatchedTarea:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        titulo:
+          type: string
+          maxLength: 150
+        estado:
+          $ref: '#/components/schemas/EstadoEnum'
+        estado_texto:
+          type: string
+          readOnly: true
+        fecha_inicio:
+          type: string
+          format: date
+        fecha_limite:
+          type: string
+          format: date
+        duracion_dias:
+          type: integer
+          description: Días transcurridos entre el inicio y la fecha límite.
+          readOnly: true
+    Tarea:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        titulo:
+          type: string
+          maxLength: 150
+        estado:
+          $ref: '#/components/schemas/EstadoEnum'
+        estado_texto:
+          type: string
+          readOnly: true
+        fecha_inicio:
+          type: string
+          format: date
+        fecha_limite:
+          type: string
+          format: date
+        duracion_dias:
+          type: integer
+          description: Días transcurridos entre el inicio y la fecha límite.
+          readOnly: true
+      required:
+      - duracion_dias
+      - estado_texto
+      - fecha_inicio
+      - fecha_limite
+      - id
+      - titulo
+      - url
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
